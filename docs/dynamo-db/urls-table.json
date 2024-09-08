@@ -1,0 +1,19 @@
+{
+  "TableName": "urls",
+  "KeySchema": [
+    {
+      "AttributeName": "short",
+      "KeyType": "HASH"
+    }
+  ],
+  "AttributeDefinitions": [
+    {
+      "AttributeName": "short",
+      "AttributeType": "S"
+    }
+  ],
+  "ProvisionedThroughput": {
+    "ReadCapacityUnits": 40000,
+    "WriteCapacityUnits": 40000
+  }
+}

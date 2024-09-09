@@ -22,9 +22,9 @@ func CreateShortUrl(r http.Request) (http.Response, error) {
 	completeUrl := fmt.Sprintf("%s/%s", container.Host, short)
 
 	msg := &events.Message{
-		ContentType: events.TypePlain,
-		Key:         short,
-		Body:        []byte(fmt.Sprintf("%s%s", short, url)),
+		Operation: events.OpCreate,
+		Key:       short,
+		Body:      []byte(fmt.Sprintf("%s%s", short, url)),
 	}
 	err := dispatcher.Dispatch(r.Ctx(), container.Events["urls.created"], *msg)
 

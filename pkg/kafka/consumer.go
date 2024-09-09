@@ -3,7 +3,7 @@ package kafka
 import (
 	"context"
 	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
+	wkafka "github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/plugin"
 	"github.com/isaquesb/meli-url-shortener/internal/ports/input/events"
@@ -54,9 +54,9 @@ func NewLogger(debug, trace bool) watermill.LoggerAdapter {
 }
 
 func NewSubscriber(logger watermill.LoggerAdapter, consumerGroup string, brokers []string) (message.Subscriber, error) {
-	sub, err := kafka.NewSubscriber(kafka.SubscriberConfig{
+	sub, err := wkafka.NewSubscriber(wkafka.SubscriberConfig{
 		Brokers:       brokers,
-		Unmarshaler:   kafka.DefaultMarshaler{},
+		Unmarshaler:   wkafka.DefaultMarshaler{},
 		ConsumerGroup: consumerGroup,
 	}, logger)
 

@@ -17,9 +17,9 @@ func PersistUrl(m *inputevents.Message) error {
 
 	dispatcher := container.Worker.GetDispatcher()
 	err := dispatcher.Dispatch(container.Ctx, "urls", events.Message{
-		ContentType: events.TypePlain,
-		Key:         []byte(short),
-		Body:        []byte(url),
+		Operation: events.OpCreate,
+		Key:       []byte(short),
+		Body:      []byte(url),
 	})
 
 	if err != nil {

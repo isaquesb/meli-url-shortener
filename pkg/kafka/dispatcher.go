@@ -2,17 +2,17 @@ package kafka
 
 import (
 	"context"
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/isaquesb/meli-url-shortener/internal/ports/output/events"
 	"log"
 )
 
 type Dispatcher struct {
-	producer *kafka.Producer
+	producer *ckafka.Producer
 }
 
 func NewDispatcher(cfg map[string]interface{}) (events.Dispatcher, error) {
-	config := &kafka.ConfigMap{}
+	config := &ckafka.ConfigMap{}
 	for k, v := range cfg {
 		err := config.SetKey(k, v)
 		if err != nil {
@@ -20,7 +20,7 @@ func NewDispatcher(cfg map[string]interface{}) (events.Dispatcher, error) {
 		}
 	}
 
-	producer, err := kafka.NewProducer(config)
+	producer, err := ckafka.NewProducer(config)
 	if err != nil {
 		return nil, err
 	}
@@ -33,9 +33,9 @@ func (kp *Dispatcher) Close() {
 }
 
 func (kp *Dispatcher) Dispatch(ctx context.Context, topic string, msg events.Message) error {
-	err := kp.producer.Produce(&kafka.Message{
+	err := kp.producer.Produce(&ckafka.Message{
 		Key:            msg.Key,
-		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
+		TopicPartition: ckafka.TopicPartition{Topic: &topic, Partition: ckafka.PartitionAny},
 		Value:          msg.Body,
 	}, nil)
 
@@ -45,7 +45,7 @@ func (kp *Dispatcher) Dispatch(ctx context.Context, topic string, msg events.Mes
 
 	e := <-kp.producer.Events()
 	switch ev := e.(type) {
-	case *kafka.Message:
+	case *ckafka.Message:
 		if ev.TopicPartition.Error != nil {
 			log.Printf("Error delivering message: %v", ev.TopicPartition.Error)
 			return ev.TopicPartition.Error

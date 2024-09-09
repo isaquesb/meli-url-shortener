@@ -10,7 +10,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.34.8
 	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/fasthttp/router v1.5.2
-	github.com/golang/mock v1.1.1
 	github.com/joho/godotenv v1.5.1
 	github.com/spf13/cobra v1.8.1
 	github.com/valyala/fasthttp v1.55.0

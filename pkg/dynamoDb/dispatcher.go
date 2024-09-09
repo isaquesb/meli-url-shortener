@@ -59,16 +59,19 @@ func CreateConnection(opts DispatcherOptions) (*dynamodb.Client, error) {
 	}
 
 	if isLocal {
-		configOpts = append(configOpts, config.WithEndpointResolver(aws.EndpointResolverFunc(
-			func(service, region string) (aws.Endpoint, error) {
-				if service == dynamodb.ServiceID {
-					return aws.Endpoint{
-						URL: opts.Host,
-					}, nil
-				}
-				return aws.Endpoint{}, fmt.Errorf("unknown aws service: %s", service)
-			}),
-		))
+		configOpts = append(
+			configOpts,
+			config.WithEndpointResolver(aws.EndpointResolverFunc(
+				func(service, region string) (aws.Endpoint, error) {
+					if service == dynamodb.ServiceID {
+						return aws.Endpoint{
+							URL: opts.Host,
+						}, nil
+					}
+					return aws.Endpoint{}, fmt.Errorf("unknown aws service: %s", service)
+				}),
+			),
+		)
 	}
 
 	cfg, err := config.LoadDefaultConfig(context.TODO(), configOpts...)

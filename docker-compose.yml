@@ -1,4 +1,46 @@
 services:
+  api:
+    build:
+      context: ./
+      dockerfile: docker/build/dev/Dockerfile
+    image: meli/url-shortener
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - 8080:8080
+    environment:
+      ENVIRONMENT: 'production'
+      DYNAMODB_REGION: 'local'
+      DYNAMODB_HOST: 'http://dynamodb-local:8000'
+      KAFKA_BROKERS: 'kafka:29092'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://collector:4318'
+    volumes:
+      - .:/go/src
+    depends_on:
+      - dynamodb-local
+      - kafka
+  worker:
+    build:
+      context: ./
+      dockerfile: docker/build/dev/Dockerfile
+    image: meli/url-shortener
+    entrypoint: ["./shortener", "worker"]
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      ENVIRONMENT: 'production'
+      DYNAMODB_REGION: 'local'
+      DYNAMODB_HOST: 'http://dynamodb-local:8000'
+      KAFKA_BROKERS: 'kafka:29092'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://collector:4318'
+    volumes:
+      - .:/go/src
+    depends_on:
+      - dynamodb-local
+      - kafka
+
   dynamodb-local:
     command: "-jar DynamoDBLocal.jar -sharedDb"
     image: "amazon/dynamodb-local:latest"
@@ -22,6 +64,7 @@ services:
       - zookeeper
     ports:
       - 9092:9092
+      - 29092:29092
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181

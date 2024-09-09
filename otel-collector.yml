@@ -1,0 +1,28 @@
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: "0.0.0.0:4318"
+      grpc:
+
+exporters:
+  elasticsearch:
+    endpoints: ["https://es01:9200"]
+    index: "otel-metrics-%{+yyyy.MM.dd}"
+    user: elastic
+    password: "changeme123456"
+    tls:
+      insecure: false
+      ca_file: "/etc/certs/ca/ca.crt"
+      cert_file: "/etc/certs/es01/es01.crt"
+      key_file: "/etc/certs/es01/es01.key"
+
+processors:
+  batch:
+
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      exporters: [elasticsearch]
+      processors: [batch]

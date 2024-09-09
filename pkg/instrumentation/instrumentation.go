@@ -15,7 +15,7 @@ import (
 
 type Instrumentation struct {
 	HTTPTotalRequestsCounter api.Int64Counter
-	HTTPRequestHistogram     api.Float64Histogram
+	HTTPRequestDuration      api.Int64Gauge
 }
 
 func New(serviceName, environment string) *Instrumentation {
@@ -46,13 +46,13 @@ func New(serviceName, environment string) *Instrumentation {
 		api.WithDescription("Total number of HTTP requests"),
 	)
 
-	httpRequestHistogram, _ := meter.Float64Histogram(
-		"http_request_duration_seconds",
+	httpRequestDuration, _ := meter.Int64Gauge(
+		"http_request_duration_ms",
 		api.WithDescription("Duration of HTTP requests"),
 	)
 
 	return &Instrumentation{
 		HTTPTotalRequestsCounter: httpTotalRequestsCounter,
-		HTTPRequestHistogram:     httpRequestHistogram,
+		HTTPRequestDuration:      httpRequestDuration,
 	}
 }

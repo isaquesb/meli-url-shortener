@@ -26,7 +26,7 @@ func (ir *Router) instrumentedHandler(handlerFunc fasthttp.RequestHandler) fasth
 	return func(ctx *fasthttp.RequestCtx) {
 		start := time.Now()
 		handlerFunc(ctx)
-		duration := time.Since(start).Seconds()
+		duration := time.Since(start).Milliseconds()
 
 		labels := []attribute.KeyValue{
 			attribute.String("method", string(ctx.Method())),
@@ -34,7 +34,7 @@ func (ir *Router) instrumentedHandler(handlerFunc fasthttp.RequestHandler) fasth
 			attribute.String("path", string(ctx.Path())),
 		}
 
-		ir.instrumentation.HTTPRequestHistogram.Record(ctx, duration, api.WithAttributes(labels...))
+		ir.instrumentation.HTTPRequestDuration.Record(ctx, duration, api.WithAttributes(labels...))
 		ir.instrumentation.HTTPTotalRequestsCounter.Add(ctx, 1, api.WithAttributes(labels...))
 	}
 }

@@ -1,18 +1,23 @@
 package kafka
 
 import (
-	"fmt"
+	"context"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/isaquesb/meli-url-shortener/internal/ports/output/events"
 	"log"
 )
 
-type Producer struct {
+type Dispatcher struct {
 	producer *kafka.Producer
 }
 
-func NewKafkaProducer() (*Producer, error) {
-	config := &kafka.ConfigMap{
-		"bootstrap.servers": "localhost:9092",
+func NewDispatcher(cfg map[string]interface{}) (events.Dispatcher, error) {
+	config := &kafka.ConfigMap{}
+	for k, v := range cfg {
+		err := config.SetKey(k, v)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	producer, err := kafka.NewProducer(config)
@@ -20,19 +25,18 @@ func NewKafkaProducer() (*Producer, error) {
 		return nil, err
 	}
 
-	return &Producer{producer: producer}, nil
+	return &Dispatcher{producer: producer}, nil
 }
 
-func (kp *Producer) Close() {
+func (kp *Dispatcher) Close() {
 	kp.producer.Close()
 }
 
-func (kp *Producer) Write(topic, short, url string) error {
-	message := fmt.Sprintf(`%s%s`, short, url)
-
+func (kp *Dispatcher) Dispatch(ctx context.Context, topic string, msg events.Message) error {
 	err := kp.producer.Produce(&kafka.Message{
+		Key:            msg.Key,
 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-		Value:          []byte(message),
+		Value:          msg.Body,
 	}, nil)
 
 	if err != nil {

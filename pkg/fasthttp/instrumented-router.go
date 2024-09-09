@@ -1,6 +1,7 @@
 package fasthttp
 
 import (
+	"github.com/isaquesb/meli-url-shortener/internal/ports/input/http"
 	"github.com/isaquesb/meli-url-shortener/pkg/instrumentation"
 	"time"
 
@@ -15,7 +16,7 @@ type Router struct {
 	instrumentation *instrumentation.Instrumentation
 }
 
-func New(serviceName, environment string) *Router {
+func NewRouter(serviceName, environment string) *Router {
 	return &Router{
 		router:          fr.New(),
 		instrumentation: instrumentation.New(serviceName, environment),
@@ -39,18 +40,30 @@ func (ir *Router) instrumentedHandler(handlerFunc fasthttp.RequestHandler) fasth
 	}
 }
 
+func (ir *Router) routedHandler(handlerFunc http.RouteHandler) fasthttp.RequestHandler {
+	return func(ctx *fasthttp.RequestCtx) {
+		httpRequest := NewRequest(ctx)
+		response, err := handlerFunc(httpRequest)
+		if err != nil {
+			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+			return
+		}
+		ParseResponse(response, ctx)
+	}
+}
+
 func (ir *Router) Handler(ctx *fasthttp.RequestCtx) {
 	ir.router.Handler(ctx)
 }
 
-func (ir *Router) GET(path string, handler fasthttp.RequestHandler) {
-	ir.router.GET(path, ir.instrumentedHandler(handler))
+func (ir *Router) GET(path string, handler http.RouteHandler) {
+	ir.router.GET(path, ir.instrumentedHandler(ir.routedHandler(handler)))
 }
 
-func (ir *Router) POST(path string, handler fasthttp.RequestHandler) {
-	ir.router.POST(path, ir.instrumentedHandler(handler))
+func (ir *Router) POST(path string, handler http.RouteHandler) {
+	ir.router.POST(path, ir.instrumentedHandler(ir.routedHandler(handler)))
 }
 
-func (ir *Router) DELETE(path string, handler fasthttp.RequestHandler) {
-	ir.router.DELETE(path, ir.instrumentedHandler(handler))
+func (ir *Router) DELETE(path string, handler http.RouteHandler) {
+	ir.router.DELETE(path, ir.instrumentedHandler(ir.routedHandler(handler)))
 }

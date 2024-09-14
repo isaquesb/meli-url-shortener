@@ -1,4 +1,4 @@
-# Meli URL Shortener
+# URL Shortener
 
 ### How to Up
 

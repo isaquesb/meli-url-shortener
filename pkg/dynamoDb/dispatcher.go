@@ -7,7 +7,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/isaquesb/meli-url-shortener/internal/ports/output/events"
+	"github.com/isaquesb/meli-url-shortener/internal/events"
+	"github.com/isaquesb/meli-url-shortener/internal/ports/output"
+	"github.com/isaquesb/meli-url-shortener/internal/urls"
 	"time"
 )
 
@@ -20,7 +22,7 @@ type Dispatcher struct {
 	writer *dynamodb.Client
 }
 
-func NewDispatcher(opts DispatcherOptions) (events.Dispatcher, error) {
+func NewDispatcher(opts DispatcherOptions) (output.Dispatcher, error) {
 	connection, err := CreateConnection(opts)
 	if err != nil {
 		return nil, err
@@ -30,11 +32,13 @@ func NewDispatcher(opts DispatcherOptions) (events.Dispatcher, error) {
 	}, nil
 }
 
-func (d *Dispatcher) Dispatch(ctx context.Context, tableName string, msg events.Message) error {
+func (d *Dispatcher) Dispatch(ctx context.Context, msg events.Event) error {
+	tableName := "urls"
+	evt := msg.(*urls.CreateEvent)
 	item := map[string]types.AttributeValue{
-		"short":      &types.AttributeValueMemberS{Value: string(msg.Key)},
-		"url":        &types.AttributeValueMemberS{Value: string(msg.Body)},
-		"created_at": &types.AttributeValueMemberS{Value: time.Now().Format(time.RFC3339)},
+		"short":      &types.AttributeValueMemberS{Value: string(evt.ShortCode)},
+		"url":        &types.AttributeValueMemberS{Value: string(evt.Url)},
+		"created_at": &types.AttributeValueMemberS{Value: evt.CreatedAt.Format(time.RFC3339)},
 	}
 	_, err := d.writer.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: &tableName,

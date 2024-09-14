@@ -9,8 +9,8 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   "shortener",
-	Short: "Meli URL Shortener",
-	Long:  "Meli URL Shortener",
+	Short: "URL Shortener",
+	Long:  "URL Shortener",
 }
 
 func Execute() {

@@ -3,7 +3,9 @@ package kafka
 import (
 	"context"
 	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/isaquesb/meli-url-shortener/internal/ports/output/events"
+	"github.com/goccy/go-json"
+	"github.com/isaquesb/meli-url-shortener/internal/events"
+	"github.com/isaquesb/meli-url-shortener/internal/ports/output"
 	"log"
 )
 
@@ -11,7 +13,7 @@ type Dispatcher struct {
 	producer *ckafka.Producer
 }
 
-func NewDispatcher(cfg map[string]interface{}) (events.Dispatcher, error) {
+func NewDispatcher(cfg map[string]interface{}) (output.Dispatcher, error) {
 	config := &ckafka.ConfigMap{}
 	for k, v := range cfg {
 		err := config.SetKey(k, v)
@@ -32,11 +34,23 @@ func (kp *Dispatcher) Close() {
 	kp.producer.Close()
 }
 
-func (kp *Dispatcher) Dispatch(ctx context.Context, topic string, msg events.Message) error {
-	err := kp.producer.Produce(&ckafka.Message{
-		Key:            msg.Key,
-		TopicPartition: ckafka.TopicPartition{Topic: &topic, Partition: ckafka.PartitionAny},
-		Value:          msg.Body,
+func (kp *Dispatcher) Dispatch(_ context.Context, msg events.Event) error {
+	topic := msg.GetName()
+	encoded, err := json.Marshal(events.Envelop{
+		Name:  msg.GetName(),
+		Event: msg,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = kp.producer.Produce(&ckafka.Message{
+		Key: msg.GetKey(),
+		TopicPartition: ckafka.TopicPartition{
+			Topic:     &topic,
+			Partition: ckafka.PartitionAny,
+		},
+		Value: encoded,
 	}, nil)
 
 	if err != nil {

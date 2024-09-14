@@ -11,7 +11,7 @@ var workerCmd = &cobra.Command{
 	Short: "Meli URL Shortener Worker",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		app := config.GetApp()
+		app := config.NewApp()
 		app.Ctx = cmd.Context()
 		dispatcher := app.Worker.GetDispatcher()
 		defer dispatcher.Close()

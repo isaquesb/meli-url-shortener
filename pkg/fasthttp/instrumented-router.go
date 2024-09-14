@@ -3,6 +3,8 @@ package fasthttp
 import (
 	"github.com/isaquesb/meli-url-shortener/internal/ports/input/http"
 	"github.com/isaquesb/meli-url-shortener/pkg/instrumentation"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 	"time"
 
 	fr "github.com/fasthttp/router"
@@ -16,16 +18,24 @@ type Router struct {
 	instrumentation *instrumentation.Instrumentation
 }
 
-func NewRouter(serviceName, environment string) *Router {
+func NewRouter(instrumentation *instrumentation.Instrumentation) *Router {
 	return &Router{
 		router:          fr.New(),
-		instrumentation: instrumentation.New(serviceName, environment),
+		instrumentation: instrumentation,
 	}
 }
 
 func (ir *Router) instrumentedHandler(handlerFunc fasthttp.RequestHandler) fasthttp.RequestHandler {
 	return func(ctx *fasthttp.RequestCtx) {
 		start := time.Now()
+
+		tracer := otel.Tracer("fast_http-tracer")
+		_, span := tracer.Start(ctx, "httpHandler", trace.WithAttributes(
+			attribute.String("method", string(ctx.Method())),
+			attribute.String("path", string(ctx.Path())),
+		))
+		defer span.End()
+
 		handlerFunc(ctx)
 		duration := time.Since(start).Milliseconds()
 
@@ -35,8 +45,8 @@ func (ir *Router) instrumentedHandler(handlerFunc fasthttp.RequestHandler) fasth
 			attribute.String("path", string(ctx.Path())),
 		}
 
-		ir.instrumentation.HTTPRequestDuration.Record(ctx, duration, api.WithAttributes(labels...))
-		ir.instrumentation.HTTPTotalRequestsCounter.Add(ctx, 1, api.WithAttributes(labels...))
+		ir.instrumentation.Metrics.HTTPRequestDuration.Record(ctx, duration, api.WithAttributes(labels...))
+		ir.instrumentation.Metrics.HTTPTotalRequestsCounter.Add(ctx, 1, api.WithAttributes(labels...))
 	}
 }
 

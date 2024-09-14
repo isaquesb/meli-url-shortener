@@ -2,11 +2,13 @@ package kafka
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/ThreeDotsLabs/watermill"
 	wkafka "github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/plugin"
-	"github.com/isaquesb/meli-url-shortener/internal/ports/input/events"
+	"github.com/isaquesb/meli-url-shortener/internal/events"
+	inputevents "github.com/isaquesb/meli-url-shortener/internal/ports/input/events"
 )
 
 type Route struct {
@@ -25,9 +27,19 @@ func (r *Router) From(topic string, handler *events.Handler) {
 
 func (r *Router) RoutedHandler(handler *events.Handler) func(m *message.Message) error {
 	return func(m *message.Message) error {
+		evt, err := handler.ParseEvent()
+		if err != nil {
+			return err
+		}
+		decoded := &events.Envelop{Event: evt}
+		err = json.Unmarshal(m.Payload, decoded)
+		if err != nil {
+			return err
+		}
 		msg := &events.Message{
-			Uuid:    m.UUID,
-			Payload: m.Payload,
+			Uuid:  m.UUID,
+			Name:  decoded.Name,
+			Event: decoded.Event,
 		}
 		return handler.Handle(msg)
 	}
@@ -76,14 +88,14 @@ func NewConsumer(logger watermill.LoggerAdapter, subscriber message.Subscriber) 
 	}
 }
 
-func (c *Consumer) GetRouter() events.Router {
+func (c *Consumer) GetRouter() inputevents.Router {
 	return c.Router
 }
 
 func (c *Consumer) Start(ctx context.Context) error {
 	for _, route := range c.Router.Routes {
 		c.Router.MessageRouter.AddNoPublisherHandler(
-			route.Handler.Name,
+			route.Handler.Id,
 			route.Topic,
 			c.Subscriber,
 			c.Router.RoutedHandler(route.Handler),

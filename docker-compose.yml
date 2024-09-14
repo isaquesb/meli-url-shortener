@@ -74,6 +74,15 @@ services:
       KAFKA_CREATE_TOPICS: "urls.created:3:1,urls.visited:3:1,urls.deleted:3:1"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    depends_on:
+      - kafka
+    ports:
+      - 19000:9000
+    environment:
+      KAFKA_BROKERCONNECT: kafka:29092
+
   setup:
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     volumes:

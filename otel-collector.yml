@@ -8,7 +8,7 @@ receivers:
 exporters:
   elasticsearch:
     endpoints: ["https://es01:9200"]
-    index: "otel-metrics-%{+yyyy.MM.dd}"
+    index: "traces-%{+yyyy.MM.dd}"
     user: elastic
     password: "changeme123456"
     tls:
@@ -23,6 +23,10 @@ processors:
 service:
   pipelines:
     metrics:
+      receivers: [otlp]
+      exporters: [elasticsearch]
+      processors: [batch]
+    traces:
       receivers: [otlp]
       exporters: [elasticsearch]
       processors: [batch]

@@ -1,9 +1,12 @@
 package events
 
-import "context"
+import (
+	"context"
+	events2 "github.com/isaquesb/meli-url-shortener/internal/events"
+)
 
 type Router interface {
-	From(topic string, handler *Handler)
+	From(topic string, handler *events2.Handler)
 }
 
 type Consumer interface {

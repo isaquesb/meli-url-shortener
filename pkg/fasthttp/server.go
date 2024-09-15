@@ -2,7 +2,7 @@ package fasthttp
 
 import (
 	"fmt"
-	"github.com/isaquesb/meli-url-shortener/internal/ports/input/http"
+	"github.com/isaquesb/url-shortener/internal/ports/input/http"
 	"github.com/valyala/fasthttp"
 )
 

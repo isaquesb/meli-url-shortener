@@ -2,9 +2,9 @@ package worker
 
 import (
 	"context"
-	"github.com/isaquesb/meli-url-shortener/internal/app"
-	inputevents "github.com/isaquesb/meli-url-shortener/internal/ports/input/events"
-	"github.com/isaquesb/meli-url-shortener/internal/urls"
+	"github.com/isaquesb/url-shortener/internal/app"
+	inputevents "github.com/isaquesb/url-shortener/internal/ports/input/events"
+	"github.com/isaquesb/url-shortener/internal/urls"
 )
 
 func Consume(_ context.Context, consumer inputevents.Consumer) {

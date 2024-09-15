@@ -3,10 +3,10 @@ package urls
 import (
 	"fmt"
 	"github.com/goccy/go-json"
-	"github.com/isaquesb/meli-url-shortener/internal/app"
-	"github.com/isaquesb/meli-url-shortener/internal/hasher"
-	"github.com/isaquesb/meli-url-shortener/internal/ports/input/http"
-	"github.com/isaquesb/meli-url-shortener/pkg/logger"
+	"github.com/isaquesb/url-shortener/internal/app"
+	"github.com/isaquesb/url-shortener/internal/hasher"
+	"github.com/isaquesb/url-shortener/internal/ports/input/http"
+	"github.com/isaquesb/url-shortener/pkg/logger"
 	"strings"
 )
 

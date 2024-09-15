@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"github.com/isaquesb/meli-url-shortener/config"
-	"github.com/isaquesb/meli-url-shortener/internal/api"
-	"github.com/isaquesb/meli-url-shortener/internal/ports/input/http"
-	"github.com/isaquesb/meli-url-shortener/internal/ports/output"
+	"github.com/isaquesb/url-shortener/config"
+	"github.com/isaquesb/url-shortener/internal/api"
+	"github.com/isaquesb/url-shortener/internal/ports/input/http"
+	"github.com/isaquesb/url-shortener/internal/ports/output"
 	"github.com/spf13/cobra"
 )
 

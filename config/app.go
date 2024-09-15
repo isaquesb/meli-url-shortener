@@ -2,15 +2,15 @@ package config
 
 import (
 	"context"
-	"github.com/isaquesb/meli-url-shortener/internal/app"
-	inputevents "github.com/isaquesb/meli-url-shortener/internal/ports/input/events"
-	"github.com/isaquesb/meli-url-shortener/internal/ports/input/http"
-	"github.com/isaquesb/meli-url-shortener/internal/ports/output"
-	"github.com/isaquesb/meli-url-shortener/internal/urls"
-	"github.com/isaquesb/meli-url-shortener/pkg/dynamoDb"
-	"github.com/isaquesb/meli-url-shortener/pkg/fasthttp"
-	"github.com/isaquesb/meli-url-shortener/pkg/instrumentation"
-	"github.com/isaquesb/meli-url-shortener/pkg/kafka"
+	"github.com/isaquesb/url-shortener/internal/app"
+	inputevents "github.com/isaquesb/url-shortener/internal/ports/input/events"
+	"github.com/isaquesb/url-shortener/internal/ports/input/http"
+	"github.com/isaquesb/url-shortener/internal/ports/output"
+	"github.com/isaquesb/url-shortener/internal/urls"
+	"github.com/isaquesb/url-shortener/pkg/dynamoDb"
+	"github.com/isaquesb/url-shortener/pkg/fasthttp"
+	"github.com/isaquesb/url-shortener/pkg/instrumentation"
+	"github.com/isaquesb/url-shortener/pkg/kafka"
 )
 
 func NewApp() *app.App {

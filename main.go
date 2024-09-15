@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/isaquesb/meli-url-shortener/cmd"
+	"github.com/isaquesb/url-shortener/cmd"
 )
 
 func main() {

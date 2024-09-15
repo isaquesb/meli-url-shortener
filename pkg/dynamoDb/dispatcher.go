@@ -6,9 +6,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/isaquesb/meli-url-shortener/internal/events"
-	"github.com/isaquesb/meli-url-shortener/internal/ports/output"
-	"github.com/isaquesb/meli-url-shortener/internal/urls"
+	"github.com/isaquesb/url-shortener/internal/events"
+	"github.com/isaquesb/url-shortener/internal/ports/output"
+	"github.com/isaquesb/url-shortener/internal/urls"
 	"time"
 )
 

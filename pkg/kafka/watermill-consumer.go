@@ -7,8 +7,8 @@ import (
 	watermillKafka "github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/plugin"
-	"github.com/isaquesb/meli-url-shortener/internal/events"
-	inputEvents "github.com/isaquesb/meli-url-shortener/internal/ports/input/events"
+	"github.com/isaquesb/url-shortener/internal/events"
+	inputEvents "github.com/isaquesb/url-shortener/internal/ports/input/events"
 )
 
 type Route struct {

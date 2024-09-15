@@ -2,10 +2,10 @@ package app
 
 import (
 	"context"
-	inputevents "github.com/isaquesb/meli-url-shortener/internal/ports/input/events"
-	"github.com/isaquesb/meli-url-shortener/internal/ports/input/http"
-	"github.com/isaquesb/meli-url-shortener/internal/ports/output"
-	"github.com/isaquesb/meli-url-shortener/pkg/instrumentation"
+	inputevents "github.com/isaquesb/url-shortener/internal/ports/input/events"
+	"github.com/isaquesb/url-shortener/internal/ports/input/http"
+	"github.com/isaquesb/url-shortener/internal/ports/output"
+	"github.com/isaquesb/url-shortener/pkg/instrumentation"
 )
 
 var container *App

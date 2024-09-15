@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"github.com/isaquesb/meli-url-shortener/config"
-	"github.com/isaquesb/meli-url-shortener/internal/ports/output"
-	"github.com/isaquesb/meli-url-shortener/internal/worker"
+	"github.com/isaquesb/url-shortener/config"
+	"github.com/isaquesb/url-shortener/internal/ports/output"
+	"github.com/isaquesb/url-shortener/internal/worker"
 	"github.com/spf13/cobra"
 )
 

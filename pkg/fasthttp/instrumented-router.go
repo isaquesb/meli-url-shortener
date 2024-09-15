@@ -1,9 +1,9 @@
 package fasthttp
 
 import (
-	"github.com/isaquesb/meli-url-shortener/internal/ports/input/http"
-	"github.com/isaquesb/meli-url-shortener/pkg/instrumentation"
-	"github.com/isaquesb/meli-url-shortener/pkg/logger"
+	"github.com/isaquesb/url-shortener/internal/ports/input/http"
+	"github.com/isaquesb/url-shortener/pkg/instrumentation"
+	"github.com/isaquesb/url-shortener/pkg/logger"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 	"time"

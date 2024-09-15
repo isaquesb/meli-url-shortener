@@ -1,4 +1,4 @@
-module github.com/isaquesb/meli-url-shortener
+module github.com/isaquesb/url-shortener
 
 go 1.23.0
 

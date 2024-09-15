@@ -4,9 +4,9 @@ import (
 	"context"
 	confluentKafka "github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/goccy/go-json"
-	"github.com/isaquesb/meli-url-shortener/internal/events"
-	"github.com/isaquesb/meli-url-shortener/internal/ports/output"
-	"github.com/isaquesb/meli-url-shortener/pkg/logger"
+	"github.com/isaquesb/url-shortener/internal/events"
+	"github.com/isaquesb/url-shortener/internal/ports/output"
+	"github.com/isaquesb/url-shortener/pkg/logger"
 )
 
 type Dispatcher struct {

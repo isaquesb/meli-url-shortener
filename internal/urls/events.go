@@ -2,7 +2,7 @@ package urls
 
 import (
 	"fmt"
-	"github.com/isaquesb/meli-url-shortener/internal/events"
+	"github.com/isaquesb/url-shortener/internal/events"
 	"time"
 )
 

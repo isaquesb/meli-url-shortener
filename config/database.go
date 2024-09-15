@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/isaquesb/meli-url-shortener/pkg/dynamoDb"
+	"github.com/isaquesb/url-shortener/pkg/dynamoDb"
 )
 
 var dynamoClient *dynamodb.Client

@@ -2,7 +2,7 @@ package output
 
 import (
 	"context"
-	"github.com/isaquesb/meli-url-shortener/internal/events"
+	"github.com/isaquesb/url-shortener/internal/events"
 )
 
 type Dispatcher interface {

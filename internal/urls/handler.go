@@ -2,8 +2,8 @@ package urls
 
 import (
 	"fmt"
-	"github.com/isaquesb/meli-url-shortener/internal/app"
-	inputevents "github.com/isaquesb/meli-url-shortener/internal/events"
+	"github.com/isaquesb/url-shortener/internal/app"
+	inputevents "github.com/isaquesb/url-shortener/internal/events"
 	"strings"
 )
 

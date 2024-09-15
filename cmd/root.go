@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/isaquesb/meli-url-shortener/config"
-	"github.com/isaquesb/meli-url-shortener/pkg/logger"
+	"github.com/isaquesb/url-shortener/config"
+	"github.com/isaquesb/url-shortener/pkg/logger"
 	"github.com/spf13/cobra"
 	"os"
 )

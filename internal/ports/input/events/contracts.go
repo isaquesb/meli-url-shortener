@@ -2,7 +2,7 @@ package events
 
 import (
 	"context"
-	internalEvents "github.com/isaquesb/meli-url-shortener/internal/events"
+	internalEvents "github.com/isaquesb/url-shortener/internal/events"
 )
 
 type Router interface {

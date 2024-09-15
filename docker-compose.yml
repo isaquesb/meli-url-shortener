@@ -3,7 +3,7 @@ services:
     build:
       context: ./
       dockerfile: docker/build/dev/Dockerfile
-    image: meli/url-shortener
+    image: isaquesb/url-shortener
     restart: unless-stopped
     env_file:
       - .env
@@ -24,7 +24,7 @@ services:
     build:
       context: ./
       dockerfile: docker/build/dev/Dockerfile
-    image: meli/url-shortener
+    image: isaquesb/url-shortener
     entrypoint: ["./shortener", "worker"]
     restart: unless-stopped
     env_file:

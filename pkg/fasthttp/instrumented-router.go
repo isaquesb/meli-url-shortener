@@ -3,6 +3,7 @@ package fasthttp
 import (
 	"github.com/isaquesb/meli-url-shortener/internal/ports/input/http"
 	"github.com/isaquesb/meli-url-shortener/pkg/instrumentation"
+	"github.com/isaquesb/meli-url-shortener/pkg/logger"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 	"time"
@@ -55,7 +56,8 @@ func (ir *Router) routedHandler(handlerFunc http.RouteHandler) fasthttp.RequestH
 		httpRequest := NewRequest(ctx)
 		response, err := handlerFunc(httpRequest)
 		if err != nil {
-			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+			logger.Error(err.Error())
+			ctx.Error("internal server error", fasthttp.StatusInternalServerError)
 			return
 		}
 		ParseResponse(response, ctx)

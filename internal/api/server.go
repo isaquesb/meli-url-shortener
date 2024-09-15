@@ -13,29 +13,39 @@ import (
 	"syscall"
 )
 
-func Start(ctx context.Context, server http.Server, router http.Router, instrumentation *instrumentation.Instrumentation) {
-	router.POST("/", urls.CreateShortUrl)
+type Api struct {
+	Ctx    context.Context
+	Server http.Server
+	Router http.Router
+	Instr  *instrumentation.Instrumentation
+}
+
+func (a *Api) Start() {
+	a.Router.GET("/{short}", urls.RedirectShort)
+	a.Router.DELETE("/{short}", urls.DeleteShortUrl)
+	a.Router.GET("/{short}/stats", urls.ShowStats)
+	a.Router.POST("/", urls.CreateShortUrl)
 
 	go func() {
-		logger.Info(fmt.Sprintf("starting http server on port %d", server.Options().Port))
-		if err := server.Start(router); err != nil {
+		logger.Info(fmt.Sprintf("starting http server on port %d", a.Server.Options().Port))
+		if err := a.Server.Start(a.Router); err != nil {
 			log.Fatalf("error starting server: %s", err)
 		}
 	}()
 
-	signalListener(ctx, server, instrumentation)
+	a.signalListener()
 }
 
-func signalListener(ctx context.Context, server http.Server, instrumentation *instrumentation.Instrumentation) {
+func (a *Api) signalListener() {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	<-ch
 
-	if err := instrumentation.Tracer.Shutdown(ctx); err != nil {
+	if err := a.Instr.Tracer.Shutdown(a.Ctx); err != nil {
 		logger.Error("Failed to shutdown tracer: %v", err)
 	}
 
-	if err := server.Shutdown(); err != nil {
+	if err := a.Server.Shutdown(); err != nil {
 		logger.Error("Error in Shutdown: %s", err)
 	}
 

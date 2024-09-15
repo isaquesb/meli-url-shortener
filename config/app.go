@@ -23,7 +23,7 @@ func NewApp() *app.App {
 			container := app.GetApp()
 			return instrumentation.New(container.Ctx, container.Name, container.Environment)
 		},
-		Events: map[string]string{
+		Topics: map[string]string{
 			urls.Created: GetEnv("CREATED_STORE", urls.Created),
 			urls.Deleted: GetEnv("DELETED_STORE", urls.Deleted),
 			urls.Visited: GetEnv("VISITED_STORE", urls.Visited),
@@ -40,9 +40,17 @@ func NewApp() *app.App {
 			Server: func(options http.Options) http.Server {
 				return fasthttp.New(options)
 			},
-			WithDispatcher: app.WithDispatcher{
-				Dispatcher: nil,
-				CreateDispatcher: func() output.Dispatcher {
+			Repository: app.Lazy[output.UrlRepository]{
+				Create: func() output.UrlRepository {
+					client, err := dynamoDbClient()
+					if err != nil {
+						panic(err)
+					}
+					return dynamoDb.NewRepository(client)
+				},
+			},
+			Dispatcher: app.Lazy[output.Dispatcher]{
+				Create: func() output.Dispatcher {
 					kafkaDispatcher, err := kafka.NewDispatcher(map[string]interface{}{
 						"bootstrap.servers": GetEnv("KAFKA_BROKERS", "kafka:9092"),
 					})
@@ -54,9 +62,8 @@ func NewApp() *app.App {
 			},
 		},
 		Worker: &app.Worker{
-			WithConsumer: app.WithConsumer{
-				Consumer: nil,
-				CreateConsumer: func() inputevents.Consumer {
+			Consumer: app.Lazy[inputevents.Consumer]{
+				Create: func() inputevents.Consumer {
 					container := app.GetApp()
 					cLogger := kafka.NewLogger(container.Debug.Enabled, container.Debug.Trace)
 					group := GetEnv("KAFKA_CONSUMER_GROUP", "url-shortener")
@@ -71,13 +78,13 @@ func NewApp() *app.App {
 					return kafka.NewConsumer(cLogger, subscriber)
 				},
 			},
-			WithDispatcher: app.WithDispatcher{
-				Dispatcher: nil,
-				CreateDispatcher: func() output.Dispatcher {
-					dispatcher, err := dynamoDb.NewDispatcher(dynamoDb.DispatcherOptions{
-						Region: GetEnv("DYNAMODB_REGION", "local"),
-						Host:   GetEnv("DYNAMODB_HOST", "http://dynamodb-local:8000"),
-					})
+			Dispatcher: app.Lazy[output.Dispatcher]{
+				Create: func() output.Dispatcher {
+					client, err := dynamoDbClient()
+					if err != nil {
+						panic(err)
+					}
+					dispatcher, err := dynamoDb.NewDispatcher(client)
 					if err != nil {
 						panic(err)
 					}

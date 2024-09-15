@@ -2,27 +2,23 @@ package urls
 
 import (
 	"fmt"
+	"github.com/isaquesb/meli-url-shortener/internal/app"
 	inputevents "github.com/isaquesb/meli-url-shortener/internal/events"
-	"github.com/isaquesb/meli-url-shortener/pkg/logger"
+	"strings"
 )
 
-func CreateHandler(m *inputevents.Message) error {
-	evt := m.Event.(*CreateEvent)
+func PersistHandler(m *inputevents.Message) error {
+	container := app.GetApp()
 
-	/*container := config.GetApp()
+	dispatcher := container.Worker.Dispatcher.Get()
+	return dispatcher.Dispatch(container.Ctx, m.Event)
+}
 
-	dispatcher := container.Worker.GetDispatcher()
-	err := dispatcher.Dispatch(container.Ctx, events.Event{
-		Operation: events.OpCreate,
-		Key:       []byte(short),
-		Body:      []byte(url),
-	})
-
-	if err != nil {
-		return err
-	}*/
-
-	logger.Info(fmt.Sprintf("persisted short: %s, url: %s, createdAt: %v", evt.ShortCode, evt.Url, evt.CreatedAt))
-
-	return nil
+func EventSubscriberFor(name string) *inputevents.Subscriber {
+	handlerName := fmt.Sprintf("%sUrlHandler", strings.Replace(name, "urls.", "", -1))
+	return &inputevents.Subscriber{
+		Name:       strings.ToUpper(handlerName[0:1]) + handlerName[1:],
+		ParseEvent: EventParserFor(name),
+		Handler:    PersistHandler,
+	}
 }

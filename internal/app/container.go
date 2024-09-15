@@ -17,67 +17,44 @@ type App struct {
 	Host            string
 	Debug           Debug
 	Api             *Api
-	Events          map[string]string
+	Topics          map[string]string
 	Worker          *Worker
 	Instrumentation func() *instrumentation.Instrumentation
 }
 
-type HasDispatcher interface {
-	GetDispatcher() output.Dispatcher
+type Lazy[T any] struct {
+	Instance T
+	Create   func() T
 }
 
-type HasConsumer interface {
-	GetConsumer() inputevents.Consumer
+func (l *Lazy[T]) Get() T {
+	if l.isNil() {
+		l.Instance = l.Create()
+	}
+	return l.Instance
 }
 
-type WithDispatcher struct {
-	Dispatcher       output.Dispatcher
-	CreateDispatcher func() output.Dispatcher
-}
-
-type WithConsumer struct {
-	GroupName      string
-	Consumer       inputevents.Consumer
-	CreateConsumer func() inputevents.Consumer
+func (l *Lazy[T]) isNil() bool {
+	var t T
+	return any(l.Instance) == any(t)
 }
 
 type Api struct {
-	Port   int
-	Router func(*instrumentation.Instrumentation) http.Router
-	Server func(options http.Options) http.Server
-	WithDispatcher
+	Port       int
+	Router     func(*instrumentation.Instrumentation) http.Router
+	Server     func(options http.Options) http.Server
+	Dispatcher Lazy[output.Dispatcher]
+	Repository Lazy[output.UrlRepository]
 }
 
 type Worker struct {
-	Consumer inputevents.Consumer
-	WithDispatcher
-	WithConsumer
+	Dispatcher Lazy[output.Dispatcher]
+	Consumer   Lazy[inputevents.Consumer]
 }
 
 type Debug struct {
 	Enabled bool
 	Trace   bool
-}
-
-func (a *Api) GetDispatcher() output.Dispatcher {
-	if a.WithDispatcher.Dispatcher == nil {
-		a.WithDispatcher.Dispatcher = a.WithDispatcher.CreateDispatcher()
-	}
-	return a.WithDispatcher.Dispatcher
-}
-
-func (w *Worker) GetDispatcher() output.Dispatcher {
-	if w.WithDispatcher.Dispatcher == nil {
-		w.WithDispatcher.Dispatcher = w.WithDispatcher.CreateDispatcher()
-	}
-	return w.WithDispatcher.Dispatcher
-}
-
-func (w *Worker) GetConsumer() inputevents.Consumer {
-	if w.WithConsumer.Consumer == nil {
-		w.WithConsumer.Consumer = w.WithConsumer.CreateConsumer()
-	}
-	return w.WithConsumer.Consumer
 }
 
 func GetApp() *App {

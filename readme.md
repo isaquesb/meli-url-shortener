@@ -12,13 +12,19 @@ bash docs/dynamo-db/init.sh
 
 ### Documentation
 
-After run, PUT one URL into http://localhost:8080
+After run, POST your complete URL into http://localhost:8080
 
 ```bash
 curl --request POST \
   --url http://localhost:8080/ \
   --header 'Content-Type: multipart/form-data' \
   --form url=https://www.mercadolivre.com.br/
+
+curl --request GET \
+  --url http://localhost:8080/{short}/stats
+
+curl --request DELETE \
+  --url http://localhost:8080/{short}
 ```
 
 ### Hexagonal Diagram
@@ -44,6 +50,12 @@ classDiagram
         +Close()
     }
 
+    class `ports/Output/UrlRepository` {
+        <<interface>>
+        +UrlFromShort(context, short) url
+        +StatsFromShort(context, short) map
+    }
+
     class App {
     }
     
@@ -63,22 +75,17 @@ classDiagram
     Kafka <|-- `ports/Input/Consumer`
     Kafka <|-- `ports/Output/EventDispatcher`
     DynamoDb <|-- `ports/Output/EventDispatcher`
+    DynamoDb <|-- `ports/Output/UrlRepository`
 ```
 
 
 ### Pending Features
 
- - [ ] Short URL Redirect
- - [ ] Short URL Delete
- - [ ] Short URL Stats
  - [ ] Deployment
- - [ ] API Documentation
+ - [ ] Complete Documentation
  - [ ] Swagger UI
  - [ ] Tests
 
 ### Issues
 
  - [ ] Worker Container not working because AWS Credentials cache problems
- - [ ] Add tests
- - [ ] Add README.md
-

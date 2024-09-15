@@ -11,8 +11,8 @@ type Message struct {
 	Event Event
 }
 
-type Handler struct {
-	Id         string
+type Subscriber struct {
+	Name       string
 	ParseEvent func() (Event, error)
-	Handle     func(*Message) error
+	Handler    func(*Message) error
 }

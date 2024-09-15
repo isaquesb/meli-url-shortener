@@ -2,11 +2,11 @@ package events
 
 import (
 	"context"
-	events2 "github.com/isaquesb/meli-url-shortener/internal/events"
+	internalEvents "github.com/isaquesb/meli-url-shortener/internal/events"
 )
 
 type Router interface {
-	From(topic string, handler *events2.Handler)
+	From(string, *internalEvents.Subscriber)
 }
 
 type Consumer interface {

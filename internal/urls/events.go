@@ -26,6 +26,10 @@ func MakeEvent(name string) (events.Event, error) {
 	return nil, fmt.Errorf("event not found: %s", name)
 }
 
+func EventParserFor(evtName string) func() (events.Event, error) {
+	return func() (events.Event, error) { return MakeEvent(evtName) }
+}
+
 type CreateEvent struct {
 	ShortCode []byte    `json:"short"`
 	Url       string    `json:"url"`

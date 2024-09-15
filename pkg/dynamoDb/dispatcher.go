@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/isaquesb/meli-url-shortener/internal/events"
@@ -19,69 +18,65 @@ type DispatcherOptions struct {
 }
 
 type Dispatcher struct {
-	writer *dynamodb.Client
+	client *dynamodb.Client
 }
 
-func NewDispatcher(opts DispatcherOptions) (output.Dispatcher, error) {
-	connection, err := CreateConnection(opts)
-	if err != nil {
-		return nil, err
-	}
+func NewDispatcher(client *dynamodb.Client) (output.Dispatcher, error) {
 	return &Dispatcher{
-		writer: connection,
+		client: client,
 	}, nil
 }
 
 func (d *Dispatcher) Dispatch(ctx context.Context, msg events.Event) error {
-	tableName := "urls"
-	evt := msg.(*urls.CreateEvent)
-	item := map[string]types.AttributeValue{
-		"short":      &types.AttributeValueMemberS{Value: string(evt.ShortCode)},
-		"url":        &types.AttributeValueMemberS{Value: string(evt.Url)},
-		"created_at": &types.AttributeValueMemberS{Value: evt.CreatedAt.Format(time.RFC3339)},
+	switch evt := msg.(type) {
+	case *urls.CreateEvent:
+		return d.CreateUrl(ctx, evt)
+	case *urls.VisitEvent:
+		return d.IncreaseVisits(ctx, evt)
+	case *urls.DeleteEvent:
+		return d.DeleteUrl(ctx, evt)
+	default:
+		return fmt.Errorf("unhandled event type: %T", evt)
 	}
-	_, err := d.writer.PutItem(ctx, &dynamodb.PutItemInput{
-		TableName: &tableName,
-		Item:      item,
+}
+
+func (d *Dispatcher) CreateUrl(ctx context.Context, evt *urls.CreateEvent) error {
+	_, err := d.client.PutItem(ctx, &dynamodb.PutItemInput{
+		TableName: aws.String("urls"),
+		Item: map[string]types.AttributeValue{
+			"short":      &types.AttributeValueMemberS{Value: string(evt.ShortCode)},
+			"url":        &types.AttributeValueMemberS{Value: evt.Url},
+			"visits":     &types.AttributeValueMemberN{Value: "0"},
+			"created_at": &types.AttributeValueMemberS{Value: evt.CreatedAt.Format(time.RFC3339)},
+		},
 	})
 
 	return err
 }
 
-func (d *Dispatcher) Close() {
+func (d *Dispatcher) IncreaseVisits(ctx context.Context, evt *urls.VisitEvent) error {
+	_, err := d.client.UpdateItem(ctx, &dynamodb.UpdateItemInput{
+		TableName: aws.String("urls"),
+		Key: map[string]types.AttributeValue{
+			"short": &types.AttributeValueMemberS{Value: string(evt.ShortCode)},
+		},
+		UpdateExpression: aws.String("set visits = visits + :inc"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":inc": &types.AttributeValueMemberN{Value: "1"},
+		},
+	})
+
+	return err
 }
 
-func CreateConnection(opts DispatcherOptions) (*dynamodb.Client, error) {
-	isLocal := opts.Region == "local"
-	region := opts.Region
-	if isLocal {
-		region = "us-west-2"
-	}
-
-	configOpts := []func(*config.LoadOptions) error{
-		config.WithRegion(region),
-	}
-
-	if isLocal {
-		configOpts = append(
-			configOpts,
-			config.WithEndpointResolver(aws.EndpointResolverFunc(
-				func(service, region string) (aws.Endpoint, error) {
-					if service == dynamodb.ServiceID {
-						return aws.Endpoint{
-							URL: opts.Host,
-						}, nil
-					}
-					return aws.Endpoint{}, fmt.Errorf("unknown aws service: %s", service)
-				}),
-			),
-		)
-	}
-
-	cfg, err := config.LoadDefaultConfig(context.TODO(), configOpts...)
-	if err != nil {
-		return nil, err
-	}
-
-	return dynamodb.NewFromConfig(cfg), nil
+func (d *Dispatcher) DeleteUrl(ctx context.Context, evt *urls.DeleteEvent) error {
+	_, err := d.client.DeleteItem(ctx, &dynamodb.DeleteItemInput{
+		TableName: aws.String("urls"),
+		Key: map[string]types.AttributeValue{
+			"short": &types.AttributeValueMemberS{Value: string(evt.ShortCode)},
+		},
+	})
+	return err
 }
+
+func (d *Dispatcher) Close() {}

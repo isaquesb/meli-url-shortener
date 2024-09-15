@@ -4,16 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/ThreeDotsLabs/watermill"
-	wkafka "github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
+	watermillKafka "github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/plugin"
 	"github.com/isaquesb/meli-url-shortener/internal/events"
-	inputevents "github.com/isaquesb/meli-url-shortener/internal/ports/input/events"
+	inputEvents "github.com/isaquesb/meli-url-shortener/internal/ports/input/events"
 )
 
 type Route struct {
-	Topic   string
-	Handler *events.Handler
+	Topic      string
+	Subscriber *events.Subscriber
 }
 
 type Router struct {
@@ -21,27 +21,25 @@ type Router struct {
 	Routes        []*Route
 }
 
-func (r *Router) From(topic string, handler *events.Handler) {
-	r.Routes = append(r.Routes, &Route{Topic: topic, Handler: handler})
+func (r *Router) From(topic string, subscriber *events.Subscriber) {
+	r.Routes = append(r.Routes, &Route{Topic: topic, Subscriber: subscriber})
 }
 
-func (r *Router) RoutedHandler(handler *events.Handler) func(m *message.Message) error {
+func (r *Router) RoutedSubscriber(subscriber *events.Subscriber) func(m *message.Message) error {
 	return func(m *message.Message) error {
-		evt, err := handler.ParseEvent()
+		evt, err := subscriber.ParseEvent()
 		if err != nil {
 			return err
 		}
 		decoded := &events.Envelop{Event: evt}
-		err = json.Unmarshal(m.Payload, decoded)
-		if err != nil {
+		if err := json.Unmarshal(m.Payload, decoded); err != nil {
 			return err
 		}
-		msg := &events.Message{
+		return subscriber.Handler(&events.Message{
 			Uuid:  m.UUID,
 			Name:  decoded.Name,
 			Event: decoded.Event,
-		}
-		return handler.Handle(msg)
+		})
 	}
 }
 
@@ -66,9 +64,9 @@ func NewLogger(debug, trace bool) watermill.LoggerAdapter {
 }
 
 func NewSubscriber(logger watermill.LoggerAdapter, consumerGroup string, brokers []string) (message.Subscriber, error) {
-	sub, err := wkafka.NewSubscriber(wkafka.SubscriberConfig{
+	sub, err := watermillKafka.NewSubscriber(watermillKafka.SubscriberConfig{
 		Brokers:       brokers,
-		Unmarshaler:   wkafka.DefaultMarshaler{},
+		Unmarshaler:   watermillKafka.DefaultMarshaler{},
 		ConsumerGroup: consumerGroup,
 	}, logger)
 
@@ -88,17 +86,17 @@ func NewConsumer(logger watermill.LoggerAdapter, subscriber message.Subscriber) 
 	}
 }
 
-func (c *Consumer) GetRouter() inputevents.Router {
+func (c *Consumer) GetRouter() inputEvents.Router {
 	return c.Router
 }
 
 func (c *Consumer) Start(ctx context.Context) error {
 	for _, route := range c.Router.Routes {
 		c.Router.MessageRouter.AddNoPublisherHandler(
-			route.Handler.Id,
+			route.Subscriber.Name,
 			route.Topic,
 			c.Subscriber,
-			c.Router.RoutedHandler(route.Handler),
+			c.Router.RoutedSubscriber(route.Subscriber),
 		)
 	}
 

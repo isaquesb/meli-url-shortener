@@ -2,7 +2,11 @@ package http
 
 const Ok = 200
 const Created = 201
+const NoContent = 204
+const Redirect = 307
 const BadRequest = 400
+const NotFound = 404
+const InternalServerError = 500
 
 type GenericResponse struct {
 	Status  int
@@ -26,6 +30,13 @@ func (r *GenericResponse) GetHeaders() map[string]string {
 	return r.Headers
 }
 
+func OkResponse(status int, body string) Response {
+	return &GenericResponse{
+		Status: status,
+		Body:   body,
+	}
+}
+
 func NewResponse(status int, body string) Response {
 	return &GenericResponse{
 		Status: status,
@@ -38,5 +49,13 @@ func NewResponseWithHeaders(status int, body string, headers map[string]string) 
 		Status:  status,
 		Body:    body,
 		Headers: headers,
+	}
+}
+
+func NewRedirectResponse(url string) Response {
+	return &GenericResponse{
+		Status:  Redirect,
+		Body:    url,
+		Headers: map[string]string{"Location": url},
 	}
 }

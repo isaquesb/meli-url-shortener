@@ -7,7 +7,7 @@ COPY go.mod go.sum ./
 
 RUN go mod download
 
-COPY . /app
+COPY dev /app
 
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o shortener -ldflags '-w -s' main.go
 

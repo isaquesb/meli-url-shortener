@@ -7,14 +7,14 @@ import (
 	"github.com/isaquesb/url-shortener/internal/urls"
 )
 
-func Consume(_ context.Context, consumer inputevents.Consumer) {
+func Consume(ctx context.Context, consumer inputevents.Consumer) {
 	container := app.GetApp()
 	router := consumer.GetRouter()
 	router.From(container.Topics[urls.Created], urls.EventSubscriberFor(urls.Created))
 	router.From(container.Topics[urls.Visited], urls.EventSubscriberFor(urls.Visited))
 	router.From(container.Topics[urls.Deleted], urls.EventSubscriberFor(urls.Deleted))
 
-	err := consumer.Start(context.Background())
+	err := consumer.Start(ctx)
 	if err != nil {
 		panic(err)
 	}

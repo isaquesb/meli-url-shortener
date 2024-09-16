@@ -15,14 +15,21 @@ bash docs/dynamo-db/init.sh
 After run, POST your complete URL into http://localhost:8080
 
 ```bash
+# CREATE SHORT URL
 curl --request POST \
   --url http://localhost:8080/ \
   --header 'Content-Type: multipart/form-data' \
   --form url=https://www.mercadolivre.com.br/
 
+# REDIRECT SHORT URL To YOUR URL
+curl --request GET \
+  --url http://localhost:8080/{short}
+
+# GET STATS
 curl --request GET \
   --url http://localhost:8080/{short}/stats
 
+# DELETE SHORT URL
 curl --request DELETE \
   --url http://localhost:8080/{short}
 ```
@@ -46,7 +53,7 @@ classDiagram
 
     class `ports/Output/EventDispatcher` {
         <<interface>>
-        +Dispatch(context, to, msg) error
+        +Dispatch(context, event) error
         +Close()
     }
 

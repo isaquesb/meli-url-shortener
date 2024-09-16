@@ -2,7 +2,7 @@ services:
   api:
     build:
       context: ./
-      dockerfile: docker/build/dev/Dockerfile
+      dockerfile: docker/build/Dockerfile
     image: isaquesb/url-shortener
     restart: unless-stopped
     env_file:
@@ -14,6 +14,7 @@ services:
       DYNAMODB_REGION: 'local'
       DYNAMODB_HOST: 'http://dynamodb-local:8000'
       KAFKA_BROKERS: 'kafka:29092'
+      RABBITMQ_HOST: 'rabbitmq:5672'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://collector:4318'
     volumes:
       - .:/go/src
@@ -23,7 +24,7 @@ services:
   worker:
     build:
       context: ./
-      dockerfile: docker/build/dev/Dockerfile
+      dockerfile: docker/build/Dockerfile
     image: isaquesb/url-shortener
     entrypoint: ["./shortener", "worker"]
     restart: unless-stopped
@@ -226,6 +227,17 @@ services:
       timeout: 10s
       retries: 120
 
+  rabbitmq:
+    image: rabbitmq:3.7.3-management
+    ports:
+      - "5672:5672"   # Connect RabbitMQ (AMQP)
+      - "15672:15672" # Manage RabbitMQ
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
 networks:
   broker-kafka:
     driver: bridge
@@ -236,4 +248,6 @@ volumes:
   esdata01:
     driver: local
   kibanadata:
+    driver: local
+  rabbitmq_data:
     driver: local

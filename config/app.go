@@ -10,7 +10,7 @@ import (
 	"github.com/isaquesb/url-shortener/pkg/dynamoDb"
 	"github.com/isaquesb/url-shortener/pkg/fasthttp"
 	"github.com/isaquesb/url-shortener/pkg/instrumentation"
-	"github.com/isaquesb/url-shortener/pkg/kafka"
+	"github.com/isaquesb/url-shortener/pkg/watermill"
 )
 
 func NewApp() *app.App {
@@ -51,13 +51,11 @@ func NewApp() *app.App {
 			},
 			Dispatcher: app.Lazy[output.Dispatcher]{
 				Create: func() output.Dispatcher {
-					kafkaDispatcher, err := kafka.NewDispatcher(map[string]interface{}{
-						"bootstrap.servers": GetEnv("KAFKA_BROKERS", "kafka:9092"),
-					})
+					dispatcher, err := GetAppDispatcher()
 					if err != nil {
 						panic(err)
 					}
-					return kafkaDispatcher
+					return dispatcher
 				},
 			},
 		},
@@ -65,17 +63,13 @@ func NewApp() *app.App {
 			Consumer: app.Lazy[inputevents.Consumer]{
 				Create: func() inputevents.Consumer {
 					container := app.GetApp()
-					cLogger := kafka.NewLogger(container.Debug.Enabled, container.Debug.Trace)
-					group := GetEnv("KAFKA_CONSUMER_GROUP", "url-shortener")
-					subscriber, err := kafka.NewSubscriber(
-						cLogger,
-						group,
-						[]string{GetEnv("KAFKA_BROKERS", "kafka:9092")},
-					)
+					logger := watermill.NewLogger(container.Debug.Enabled, container.Debug.Trace)
+					group := GetEnv("CONSUMER_GROUP", "url-shortener")
+					consumer, err := GetAppConsumer(logger, group)
 					if err != nil {
 						panic(err)
 					}
-					return kafka.NewConsumer(cLogger, subscriber)
+					return consumer
 				},
 			},
 			Dispatcher: app.Lazy[output.Dispatcher]{

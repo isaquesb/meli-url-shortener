@@ -9,6 +9,7 @@ import (
 	"github.com/isaquesb/url-shortener/internal/events"
 	"github.com/isaquesb/url-shortener/internal/ports/output"
 	"github.com/isaquesb/url-shortener/internal/urls"
+	"github.com/isaquesb/url-shortener/pkg/logger"
 	"time"
 )
 
@@ -41,6 +42,7 @@ func (d *Dispatcher) Dispatch(ctx context.Context, msg events.Event) error {
 }
 
 func (d *Dispatcher) CreateUrl(ctx context.Context, evt *urls.CreateEvent) error {
+	logger.Info(fmt.Sprintf("Creating short: %s", evt.ShortCode))
 	_, err := d.client.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String("urls"),
 		Item: map[string]types.AttributeValue{
@@ -55,6 +57,7 @@ func (d *Dispatcher) CreateUrl(ctx context.Context, evt *urls.CreateEvent) error
 }
 
 func (d *Dispatcher) IncreaseVisits(ctx context.Context, evt *urls.VisitEvent) error {
+	logger.Info(fmt.Sprintf("Visited short: %s", evt.ShortCode))
 	_, err := d.client.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName: aws.String("urls"),
 		Key: map[string]types.AttributeValue{
@@ -70,6 +73,7 @@ func (d *Dispatcher) IncreaseVisits(ctx context.Context, evt *urls.VisitEvent) e
 }
 
 func (d *Dispatcher) DeleteUrl(ctx context.Context, evt *urls.DeleteEvent) error {
+	logger.Info(fmt.Sprintf("Removing short: %s", evt.ShortCode))
 	_, err := d.client.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		TableName: aws.String("urls"),
 		Key: map[string]types.AttributeValue{

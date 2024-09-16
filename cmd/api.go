@@ -19,16 +19,16 @@ var apiCmd = &cobra.Command{
 		defer dispatcher.Close()
 		instrumentation := app.Instrumentation()
 		router := app.Api.Router(instrumentation)
-		server := app.Api.Server(http.Options{
+		httpServer := app.Api.Server(http.Options{
 			Port: app.Api.Port,
 		})
 		if _, ok := dispatcher.(output.Listen); ok {
 			go dispatcher.(output.Listen).Listen(app.Ctx)
 		}
 
-		apiServer := &api.Api{
+		apiServer := &api.Server{
 			Ctx:    app.Ctx,
-			Server: server,
+			Http:   httpServer,
 			Router: router,
 			Instr:  instrumentation,
 		}

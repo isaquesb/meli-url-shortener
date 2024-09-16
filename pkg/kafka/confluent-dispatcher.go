@@ -2,8 +2,8 @@ package kafka
 
 import (
 	"context"
-	confluentKafka "github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/goccy/go-json"
+	"encoding/json"
+	confluentKafka "github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/isaquesb/url-shortener/internal/events"
 	"github.com/isaquesb/url-shortener/internal/ports/output"
 	"github.com/isaquesb/url-shortener/pkg/logger"
